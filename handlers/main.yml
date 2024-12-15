@@ -1,0 +1,13 @@
+---
+# handlers file for sec-ansible
+- name: Reload systemd daemon
+  command: systemctl daemon-reload
+  become: yes
+
+- name: Restart sshd service
+  command: systemctl restart sshd
+  become: yes
+
+- name: Restart systemd-journald service
+  command: systemctl restart systemd-journald
+  become: yes

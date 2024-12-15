@@ -1,0 +1,19 @@
+{
+    "command": "/opt/openstack-exporter/openstack-exporter --endpoint-type={{ prometheus_openstack_exporter_endpoint_type }} --os-client-config=/etc/openstack/clouds.yml --web.listen-address={{ api_interface_address | put_address_in_context('url') }}:{{ prometheus_openstack_exporter_port }} default{% for item in prometheus_openstack_exporter_disabled_metrics %} --disable-metrics {{ item }}{% endfor %}",
+    "config_files": [
+        {
+            "source": "{{ container_config_directory }}/clouds.yml",
+            "dest": "/etc/openstack/clouds.yml",
+            "owner": "prometheus",
+            "perm": "0600"
+        }
+    ],
+    "permissions": [
+        {
+            "path": "/var/log/kolla/prometheus",
+            "owner": "prometheus:kolla",
+            "recurse": true
+        }
+    ]
+}
+
