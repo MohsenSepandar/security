@@ -615,3 +615,94 @@
     cmd: sed -e 's/^\([a-zA-Z0-9_]*\):[^:]*:/\1:x:/' -i /etc/passwd
   become: true
 
+- name: Check if /home partition exists in /etc/fstab
+  ansible.builtin.command: "grep ' /home ' /etc/fstab"
+  register: home_partition
+  failed_when: home_partition.rc not in [0, 1]  # Only fail on errors
+  changed_when: false
+
+- name: Add nodev and nosuid to the /home entry in /etc/fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '^(.*\s+/home\s+\S+\s+)([^,]*)(.*)$'
+    line: '\1\2,nodev,nosuid\3'
+    backrefs: true
+  when: home_partition.rc == 0  # Only proceed if /home partition exists
+
+- name: Remount /home to apply updated options
+  ansible.builtin.command: mount -o remount /home
+  when: home_partition.rc == 0
+
+- name: Check if /var partition exists in /etc/fstab
+  ansible.builtin.command: "grep ' /var ' /etc/fstab"
+  register: var_partition
+  failed_when: var_partition.rc not in [0, 1]  # Only fail on errors
+  changed_when: false
+
+- name: Add nodev and nosuid to the /var entry in /etc/fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '^(.*\s+/var\s+\S+\s+)([^,]*)(.*)$'
+    line: '\1\2,nodev,nosuid\3'
+    backrefs: true
+  when: var_partition.rc == 0  # Only proceed if /home partition exists
+
+- name: Remount /var to apply updated options
+  ansible.builtin.command: mount -o remount /var
+  when: var_partition.rc == 0
+
+- name: Check if /var/tmp partition exists in /etc/fstab
+  ansible.builtin.command: "grep ' /var/tmp ' /etc/fstab"
+  register: vartmp_partition
+  failed_when: vartmp_partition.rc not in [0, 1]  # Fail only on errors
+  changed_when: false
+
+- name: Add nodev, nosuid, and noexec to the /var/tmp entry in /etc/fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '^(.*\s+/var/tmp\s+\S+\s+)([^,]*)(.*)$'
+    line: '\1\2,nodev,nosuid,noexec\3'
+    backrefs: true
+  when: vartmp_partition.rc == 0  # Only proceed if /var/tmp partition exists
+
+- name: Remount /var/tmp to apply updated options
+  ansible.builtin.command: mount -o remount /var/tmp
+  when: vartmp_partition.rc == 0
+
+- name: Check if /var/log partition exists in /etc/fstab
+  ansible.builtin.command: "grep ' /var/log ' /etc/fstab"
+  register: varlog_partition
+  failed_when: varlog_partition.rc not in [0, 1]  # Fail only on errors
+  changed_when: false
+
+- name: Add nodev, nosuid, and noexec to the /var/log entry in /etc/fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '^(.*\s+/var/log\s+\S+\s+)([^,]*)(.*)$'
+    line: '\1\2,nodev,nosuid,noexec\3'
+    backrefs: true
+  when: varlog_partition.rc == 0  # Only proceed if /var/log partition exists
+
+- name: Remount /var/log to apply updated options
+  ansible.builtin.command: mount -o remount /var/log
+  when: varlog_partition.rc == 0
+
+- name: Check if /var/log/audit partition exists in /etc/fstab
+  ansible.builtin.command: "grep ' /var/log/audit ' /etc/fstab"
+  register: audit_partition
+  failed_when: audit_partition.rc not in [0, 1]  # Fail only on errors
+  changed_when: false
+
+- name: Add nodev, nosuid, and noexec to the /var/log/audit entry in /etc/fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '^(.*\s+/var/log/audit\s+\S+\s+)([^,]*)(.*)$'
+    line: '\1\2,nodev,nosuid,noexec\3'
+    backrefs: true
+  when: audit_partition.rc == 0  # Only proceed if /var/log partition exists
+
+- name: Remount /var/log/audit to apply updated options
+  ansible.builtin.command: mount -o remount /var/log/audit
+  when: audit_partition.rc == 0
+
+
