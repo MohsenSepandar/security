@@ -1,0 +1,48 @@
+---
+- name: Install AppArmor and AppArmor utilities
+  apt:
+    name:
+      - apparmor
+      - apparmor-utils
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Ensure /etc/motd is owned by root
+  shell: chown root:root $(readlink -e /etc/motd)
+  args:
+    warn: false
+  when: ansible_facts['os_family'] == "Debian" and ansible_facts['distribution'] != "Ubuntu"
+  become: yes
+
+- name: Ensure /etc/motd has correct permissions
+  shell: chmod u-x,go-wx $(readlink -e /etc/motd)
+  args:
+    warn: false
+  when: ansible_facts['os_family'] == "Debian" and ansible_facts['distribution'] != "Ubuntu"
+  become: yes
+
+- name: Ensure /etc/issue is owned by root
+  shell: chown root:root $(readlink -e /etc/issue)
+  args:
+    warn: false
+  become: yes
+
+- name: Ensure /etc/issue has correct permissions
+  shell: chmod u-x,go-wx $(readlink -e /etc/issue)
+  args:
+    warn: false
+  become: yes
+
+- name: Ensure /etc/issue.net is owned by root
+  shell: chown root:root $(readlink -e /etc/issue.net)
+  args:
+    warn: false
+  become: yes
+
+- name: Ensure /etc/issue.net has correct permissions
+  shell: chmod u-x,go-wx $(readlink -e /etc/issue.net)
+  args:
+    warn: false
+  become: yes
+

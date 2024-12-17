@@ -1,0 +1,113 @@
+---
+# tasks file for sec-ansible
+
+- name: Copy the wireless script to the remote hosts
+  ansible.builtin.copy:
+    src: files/wireless.sh
+    dest: /usr/local/bin/wireless.sh
+  become: yes
+
+- name: Ensure the script is executable
+  file:
+    path: /usr/local/bin/wireless.sh
+    mode: '0755'
+
+- name: Run the script to ensure wireless interfaces are disabled
+  shell: /usr/local/bin/wireless.sh
+  register: wireless_output
+
+- name: Copy the Storage script to the remote host
+  ansible.builtin.copy:
+    src: files/storage-usb.sh
+    dest: /usr/local/bin/disable_usb_storage.sh
+  become: yes
+
+- name: Ensure the script is executable
+  file:
+    path: /usr/local/bin/disable_usb_storage.sh
+    mode: '0755'
+
+- name: Run the script to disable usb-storage module
+  shell: /usr/local/bin/disable_usb_storage.sh
+  register: script_output
+
+- name: Display the script output
+  debug:
+    var: script_output.stdout
+
+- name: Check if autofs is installed
+  apt:
+    name: autofs
+    state: absent
+    purge: yes
+  register: autofs_purge
+
+- name: Stop the autofs service if running
+  service:
+    name: autofs
+    state: stopped
+  ignore_errors: true
+  when: autofs_purge.changed == false
+
+- name: Mask the autofs service
+  systemd:
+    name: autofs
+    masked: yes
+
+- name: Copy the Cramfs script to the remote host
+  ansible.builtin.copy:
+    src: files/cramfs.sh
+    dest: /usr/local/bin/cramfs.sh
+  become: yes
+
+- name: Ensure the script is executable
+  file:
+    path: /usr/local/bin/cramfs.sh
+    mode: '0755'
+
+- name: Run the script to disable cramfs  module
+  shell: /usr/local/bin/cramfs.sh
+  register: script_output
+
+- name: Display the script output
+  debug:
+    var: script_output.stdout
+
+- name: Copy the Freexvfs script to the remote host
+  ansible.builtin.copy:
+    src: files/freexvfs.sh
+    dest: /usr/local/bin/freexvfs.sh
+  become: yes
+
+- name: Ensure the script is executable
+  file:
+    path: /usr/local/bin/freexvfs.sh
+    mode: '0755'
+
+- name: Run the script to disable freexvfs  module
+  shell: /usr/local/bin/cramfs.sh
+  register: script_output
+
+- name: Display the script output
+  debug:
+    var: script_output.stdout
+
+- name: Copy the hfsplus script to the remote host
+  ansible.builtin.copy:
+    src: files/hfsplus.sh
+    dest: /usr/local/bin/hfsplus.sh
+  become: yes
+
+- name: Ensure the script is executable
+  file:
+    path: /usr/local/bin/hfsplus.sh
+    mode: '0755'
+
+- name: Run the script to disable hfsplus module
+  shell: /usr/local/bin/hfsplus.sh
+  register: script_output
+
+- name: Display the script output
+  debug:
+    var: script_output.stdout
+

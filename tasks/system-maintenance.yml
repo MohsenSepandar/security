@@ -1,0 +1,154 @@
+---
+- name: Ensure /etc/passwd has correct ownership
+  file:
+    path: /etc/passwd
+    owner: root
+    group: root
+    state: file
+    mode: '0644'
+
+- name: Ensure /etc/passwd- has correct ownership
+  file:
+    path: /etc/passwd-
+    owner: root
+    group: root
+    state: file
+    mode: '0644'
+
+- name: Ensure /etc/group has correct ownership
+  file:
+    path: /etc/group
+    owner: root
+    group: root
+    state: file
+    mode: '0644'
+
+- name: Ensure /etc/group- has correct ownership
+  file:
+    path: /etc/group-
+    owner: root
+    group: root
+    state: file
+    mode: '0644'
+
+- name: Ensure /etc/shadow has correct ownership
+  file:
+    path: /etc/shadow
+    owner: root
+    group: shadow
+    state: file
+    mode: '0640'
+
+- name: Ensure /etc/shadow- has correct ownership
+  file:
+    path: /etc/shadow-
+    owner: root
+    group: shadow
+    state: file
+    mode: '0640'
+
+- name: Check if /etc/security/opasswd exists
+  stat:
+    path: /etc/security/opasswd
+  register: opasswd_file
+
+- name: Set permissions for /etc/security/opasswd (u-x,go-rwx) if it exists
+  file:
+    path: /etc/security/opasswd
+    mode: '0600'  # Equivalent to u-x,go-rwx (readable/writable by owner only)
+  when: opasswd_file.stat.exists
+
+- name: Set ownership to root:root for /etc/security/opasswd if it exists
+  file:
+    path: /etc/security/opasswd
+    owner: root
+    group: root
+  when: opasswd_file.stat.exists
+
+- name: Ensure /etc/gshadow has correct ownership
+  file:
+    path: /etc/gshadow
+    owner: root
+    group: shadow
+    state: file
+    mode: '0640'
+
+- name: Ensure /etc/gshadow- has correct ownership
+  file:
+    path: /etc/gshadow-
+    owner: root
+    group: shadow
+    state: file
+    mode: '0640'
+
+- name: Set permissions for /etc/shells (u-x,go-wx)
+  file:
+    path: /etc/shells
+    owner: root
+    group: root
+    state: file
+    mode: '0644'
+
+- name: Copy the Secure Files script to the remote host
+  ansible.builtin.copy:
+    src: files/secure-file.sh
+    dest: /usr/local/bin/secure-file.sh
+  become: yes
+
+- name: Ensure the script is executable
+  file:
+    path: /usr/local/bin/secure-file.sh
+    mode: '0755'
+
+- name: Run the script to Secure Files| Be Patient
+  shell: /usr/local/bin/secure-file.sh
+  register: script_output
+
+- name: Display the script output
+  debug:
+    var: script_output.stdout
+
+- name: Set ownership of /boot/grub/grub.cfg to root:root
+  file:
+    path: /boot/grub/grub.cfg
+    owner: root
+    group: root
+  become: yes
+
+- name: Set permissions on /boot/grub/grub.cfg to u-x,go-rwx
+  file:
+    path: /boot/grub/grub.cfg
+    mode: '0600'
+  become: yes
+
+- name: Ensure /etc/systemd/system directory exists
+  file:
+    path: /etc/systemd/system
+    state: directory
+    mode: '0755'
+
+- name: Copy tmp.mount from /usr/share/systemd to /etc/systemd/system
+  copy:
+    src: /usr/share/systemd/tmp.mount
+    dest: /etc/systemd/system/tmp.mount
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+  register: copy_result
+  become: yes
+
+- name: Show the copy result
+  debug:
+    var: copy_result
+
+- name: Append noexec to the Options line in [Mount] section
+  lineinfile:
+    path: /etc/systemd/system/tmp.mount
+    regexp: '^Options='       # Match the existing Options= line
+    line: "Options=mode=1777,strictatime,nosuid,nodev,size=50%%,nr_inodes=1m,noexec"  # Full line with noexec
+    insertafter: '\[Mount\]'  # Ensure it's under the [Mount] section
+    state: present            # Ensure the line is present and updated
+  notify: Reload systemd daemon
+  become: yes
+
