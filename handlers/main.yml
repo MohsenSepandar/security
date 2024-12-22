@@ -11,3 +11,4 @@
 - name: Restart systemd-journald service
   command: systemctl restart systemd-journald
   become: yes
+

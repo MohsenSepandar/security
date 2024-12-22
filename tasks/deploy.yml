@@ -11,3 +11,8 @@
 
 - include_tasks: logging.yml
 
+- include_tasks: partitions.yml
+  loop: "{{ fstab_partitions }}"
+  loop_control:
+    loop_var: partition
+

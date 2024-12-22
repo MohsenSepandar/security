@@ -1,0 +1,34 @@
+---
+- name: test loop
+  debug:
+    msg: "the partition is {{ partition }}"
+
+- name: Check if partitions are mounted
+  ansible.builtin.shell: "mount | grep {{ partition }}"
+  register: mount_status
+  failed_when: mount_status.rc not in [0, 1]  # Ignore 'grep' not finding the line
+  changed_when: false
+  #with_items: "{{ fstab_partitions }}"
+
+- name: Ensure rw,nosuid,nodev,relatime options are set for partitions in {{ partition }}
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '^(.*\s+{{ partition }}\s+\S+\s+defaults,)(.*)$'
+    line: '\1rw,nosuid,nodev,relatime 0 0'
+    backrefs: yes
+      #with_items: "{{ fstab_partitions }}"
+  when: mount_status.rc == 0
+  register: fstab_status
+  become: yes
+
+- name: Check all the required conditions for remounting {{ partition }} 
+  ansible.builtin.set_fact:
+    notify_remount: true
+  when: fstab_status.changed and mount_status.rc == 0
+
+- name: Remounting the {{ partition }}
+  ansible.builtin.shell:
+    cmd: mount -o remount {{ partition }}
+      #notify: Remount home partition
+  when: notify_remount | default(false)
+
