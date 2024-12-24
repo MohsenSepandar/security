@@ -3,6 +3,8 @@
 
 - include_tasks: system-maintenance.yml
 
+- include_tasks: process-hardening.yml
+
 - include_tasks: services.yml
 
 - include_tasks: chrony.yml
