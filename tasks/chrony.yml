@@ -6,20 +6,24 @@
     update_cache: yes
   become: yes
 
-- name: Remove existing server lines from chrony.conf
-  lineinfile:
-    path: /etc/chrony/chrony.conf
-    regexp: '^server '
-    state: absent
+- name: Remove all lines starting with 'server'
+  shell: sed -i '/^pool /d' /etc/chrony/chrony.conf
+  become: yes
+
+- name: Remove all lines starting with 'server'
+  shell: sed -i '/^server /d' /etc/chrony/chrony.conf
   become: yes
 
 - name: Add specific server entries to chrony.conf
   blockinfile:
     path: /etc/chrony/chrony.conf
     block: |
-      server 172.17.255.20 iburst
-      server 172.17.255.21 iburst
+      {% for ip in chrony_timeserver_ips %}
+      server {{ ip }} iburst
+      {% endfor %}
     insertafter: '^#.*Server entries'
+  with_items: "{{ chrony_timeserver_ips }}"
+  notify: Restart chrony service
   become: yes
 
 - name: Ensure chrony service is enabled and started

@@ -12,3 +12,6 @@
   command: systemctl restart systemd-journald
   become: yes
 
+- name: Restart chrony service
+  shell: "systemctl restart chronyd.service && systemctl restart chrony.service"
+  become: yes
