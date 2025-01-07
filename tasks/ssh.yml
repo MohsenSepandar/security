@@ -1,0 +1,106 @@
+---
+- name: Copy the ssh.sh script to the remote hosts
+  ansible.builtin.copy:
+    src: files/ssh.sh
+    dest: /usr/local/bin/ssh.sh
+  become: yes
+
+- name: Ensure the script is executable
+  file:
+    path: /usr/local/bin/ssh.sh
+    mode: '0755'
+
+- name: Run the ssh.sh script
+  shell: /usr/local/bin/ssh.sh
+  register: ssh_output
+
+- name: Display the ssh.sh output
+  debug:
+    var: ssh_output.stdout
+
+- name: Copy the ssh-key.sh script to the remote hosts
+  ansible.builtin.copy:
+    src: files/ssh-key.sh
+    dest: /usr/local/bin/ssh-key.sh
+  become: yes
+
+- name: Ensure the script is executable
+  file:
+    path: /usr/local/bin/ssh-key.sh
+    mode: '0755'
+
+- name: Run the ssh-key.sh script
+  shell: /usr/local/bin/ssh-key.sh
+  register: ssh_key_output
+
+- name: Display the ssh-key.sh output
+  debug:
+    var: ssh_key_output.stdout
+
+- name: Copy the public-key.sh script to the remote hosts
+  ansible.builtin.copy:
+    src: files/public-key.sh
+    dest: /usr/local/bin/public-key.sh
+  become: yes
+
+- name: Ensure the script is executable
+  file:
+    path: /usr/local/bin/public-key.sh
+    mode: '0755'
+
+- name: Run the ssh-key.sh script
+  shell: /usr/local/bin/public-key.sh
+  register: public_key_output
+
+- name: Display the public-key.sh output
+  debug:
+    var: public_key_output.stdout
+
+- name: Ensure SSH PermitEmptyPasswords is disabled
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitEmptyPasswords'
+    line: 'PermitEmptyPasswords no'
+    state: present
+  notify: Restart sshd service
+
+- name: Ensure SSH IgnoreRhosts is enabled
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^IgnoreRhosts'
+    line: 'IgnoreRhosts yes'
+    state: present
+  notify: Restart sshd service
+
+- name: Ensure SSH MaxAuthTries is set to 4
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^MaxAuthTries'
+    line: 'MaxAuthTries 4'
+    state: present
+  notify: Restart sshd service
+
+- name: Ensure SSH MaxStartups is configured
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^MaxStartups'
+    line: 'MaxStartups 10:30:60'
+    state: present
+  notify: Restart sshd service
+
+- name: Ensure SSH LoginGraceTime is set to 45 seconds
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^LoginGraceTime'
+    line: 'LoginGraceTime 45'
+    state: present
+  notify: Restart sshd service
+
+- name: Ensure SSH MaxSessions is set to 10
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^MaxSessions'
+    line: 'MaxSessions 10'
+    state: present
+  notify: Restart sshd service
+

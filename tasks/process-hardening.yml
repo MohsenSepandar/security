@@ -1,13 +1,4 @@
 ---
-- name: Install AppArmor and AppArmor utilities
-  apt:
-    name:
-      - apparmor
-      - apparmor-utils
-    state: absent
-    update_cache: yes
-  become: yes
-
 - name: Ensure /etc/motd is owned by root
   shell: chown root:root $(readlink -e /etc/motd)
   args:

@@ -6,25 +6,20 @@
     update_cache: yes
   become: yes
 
-- name: Remove all lines starting with 'server'
-  shell: sed -i '/^pool /d' /etc/chrony/chrony.conf
-  become: yes
+- name: get the management IP range
+  become: true
+  shell: "ip route | grep {{ network_interface }} | awk {'print $1'} | grep -v default"
+  register: ip_range
 
-- name: Remove all lines starting with 'server'
-  shell: sed -i '/^server /d' /etc/chrony/chrony.conf
-  become: yes
+- name: Set the management IP range
+  set_fact:
+    management_ip_range: "{{ ip_range.stdout }}"
 
-- name: Add specific server entries to chrony.conf
-  blockinfile:
-    path: /etc/chrony/chrony.conf
-    block: |
-      {% for ip in chrony_timeserver_ips %}
-      server {{ ip }} iburst
-      {% endfor %}
-    insertafter: '^#.*Server entries'
-  with_items: "{{ chrony_timeserver_ips }}"
-  notify: Restart chrony service
-  become: yes
+- name: copy the chrony.conf file
+  template:
+    src: chrony.conf.j2
+    dest: /etc/chrony/chrony.conf
+  become: true
 
 - name: Ensure chrony service is enabled and started
   systemd:

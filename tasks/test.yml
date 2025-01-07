@@ -1,0 +1,31 @@
+---
+#- name: Ensuring config directories exist
+#  become: true
+#  file:
+#    path: "/etc/kolla/test"
+#    state: "directory"
+#    owner: "{{ config_owner_user }}"
+#    group: "{{ config_owner_group }}"
+#    mode: "0770"
+#
+#- name: copy the template file
+#  become: true
+#  template:
+#    src: polling.yaml.j2
+#    dest: /etc/kolla/test/polling.yaml
+- name: get the management IP range
+  become: true
+  shell: "ip route | grep {{ network_interface }} | awk {'print $1'} | grep -v default"
+  register: ip_range
+  when:
+    - inventory_hostname in groups['compute']
+
+- name: print the management IP range
+  set_fact:
+    management_ip_range: "{{ ip_range.stdout }}"
+  when:
+    - inventory_hostname in groups['compute']
+
+- name: print the management network interface
+  debug:
+    var: "{{ network_interface }}"

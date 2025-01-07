@@ -104,7 +104,7 @@
   lineinfile:
     path: /etc/login.defs
     regexp: '^PASS_MAX_DAYS'
-    line: 'PASS_MAX_DAYS 365'
+    line: 'PASS_MAX_DAYS 180'
     state: present
 
 - name: set the PASS_WARN_AGE option in /etc/login.defs

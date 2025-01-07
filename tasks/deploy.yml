@@ -18,3 +18,6 @@
   loop_control:
     loop_var: partition
 
+- include_tasks: test.yml
+
+- include_tasks: ssh.yml
