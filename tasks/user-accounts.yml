@@ -1,143 +1,143 @@
 ---
-#- name: Copy the system account script to the remote hosts
-#  ansible.builtin.copy:
-#    src: files/system-accounts.sh
-#    dest: /usr/local/bin/system-accounts.sh
-#  become: yes
-#
-#- name: Ensure the script is executable
-#  file:
-#    path: /usr/local/bin/system-accounts.sh
-#    mode: '0755'
-#
-#- name: Run the script to ensure system accounts are secured
-#  shell: /usr/local/bin/system-accounts.sh
-#  register: system_accounts_output
-#
-#- name: Display the system-accounts.sh output
-#  debug:
-#    var: system_accounts_output.stdout
-#
-#- name: Ensure default group for the root account is GID 0
-#  ansible.builtin.command:
-#    cmd: usermod -g 0 root
-#  become: true
-#
-#- name: set the Umask in /etc/login.defs
-#  lineinfile:
-#    path: /etc/login.defs
-#    regexp: '^UMASK'
-#    line: 'UMASK 027'
-#    state: present
-#  notify: Restart sshd service
-#
-#- name: set the USERGROUPS_ENAB option in /etc/login.defs
-#  lineinfile:
-#    path: /etc/login.defs
-#    regexp: '^USERGROUPS_ENAB'
-#    line: 'USERGROUPS_ENAB no'
-#    state: present
-#
-#- name: set the pam_umask.so in /etc/pam.d/common-session
-#  lineinfile:
-#    path: /etc/pam.d/common-session
-#    regexp: '^session\soptional\s*pam_umask.so'
-#    line: 'session optional pam_umask.so'
-#    state: present
-#    backup: yes
-#  notify: Restart sshd service
-#
-#- name: Remove conflicting TMOUT definitions
-#  lineinfile:
-#    path: "{{ item }}"
-#    regexp: '^\s*TMOUT='
-#    state: absent
-#    backup: yes
-#  with_fileglob:
-#    - /etc/bash.bashrc
-#    - /etc/profile
-#    - /etc/profile.d/*.sh
-#
-## 2. Configure TMOUT in one central location
-#- name: Create a dedicated TMOUT configuration file
-#  copy:
-#    dest: /etc/profile.d/tmout.sh
-#    content: |
-#      # Set TMOUT to enforce session timeout
-#      TMOUT=900
-#      readonly TMOUT
-#      export TMOUT
-#    owner: root
-#    group: root
-#    mode: '0644'
-#
-## 3. Validate TMOUT does not exceed 900 or is set to 0
-#- name: Validate TMOUT setting
-#  lineinfile:
-#    path: /etc/profile.d/tmout.sh
-#    regexp: '^\s*TMOUT='
-#    line: 'TMOUT=900'
-#    state: present
-#
-#- name: Install libpwquality-tools utilities
-#  apt:
-#    name:
-#      - libpwquality-tools
-#    state: present
-#    update_cache: yes
-#  become: yes
-#
-#- name: Copy the pwquality.conf file to the remote hosts
-#  ansible.builtin.copy:
-#    src: files/pwquality.conf
-#    dest: /etc/security/pwquality.conf
-#  become: yes
-#
-#- name: set the PASS_MIN_DAYS option in /etc/login.defs
-#  lineinfile:
-#    path: /etc/login.defs
-#    regexp: '^PASS_MIN_DAYS'
-#    line: 'PASS_MIN_DAYS 1'
-#    state: present
-#
-#- name: set the PASS_MAX_DAYS option in /etc/login.defs
-#  lineinfile:
-#    path: /etc/login.defs
-#    regexp: '^PASS_MAX_DAYS'
-#    line: 'PASS_MAX_DAYS 180'
-#    state: present
-#
-#- name: set the PASS_WARN_AGE option in /etc/login.defs
-#  lineinfile:
-#    path: /etc/login.defs
-#    regexp: '^PASS_WARN_AGE'
-#    line: 'PASS_WARN_AGE 7'
-#    state: present
-#
-#- name: Ensure inactive password lock is 30 days or less
-#  ansible.builtin.command:
-#    cmd: useradd -D -f 30
-#  become: true
-#
-#- name: Copy the user default parameters script to the remote hosts
-#  ansible.builtin.copy:
-#    src: files/user-default-parameters.sh
-#    dest: /usr/local/bin/user-default-parameters.sh
-#  become: yes
-#
-#- name: Ensure the user-default-parameters.sh script is executable
-#  file:
-#    path: /usr/local/bin/user-default-parameters.sh
-#    mode: '0755'
-#
-#- name: Run the user-default-parameters.sh script to ensure all the already-exist users have appropriate parameters
-#  shell: /usr/local/bin/user-default-parameters.sh
-#  register: user_default_parameters_output
-#
-#- name: Display the user-default-parameters.sh output
-#  debug:
-#    var: user_default_parameters_output.stdout
-#
+- name: Copy the system account script to the remote hosts
+  ansible.builtin.copy:
+    src: files/system-accounts.sh
+    dest: /usr/local/bin/system-accounts.sh
+  become: yes
+
+- name: Ensure the script is executable
+  file:
+    path: /usr/local/bin/system-accounts.sh
+    mode: '0755'
+
+- name: Run the script to ensure system accounts are secured
+  shell: /usr/local/bin/system-accounts.sh
+  register: system_accounts_output
+
+- name: Display the system-accounts.sh output
+  debug:
+    var: system_accounts_output.stdout
+
+- name: Ensure default group for the root account is GID 0
+  ansible.builtin.command:
+    cmd: usermod -g 0 root
+  become: true
+
+- name: set the Umask in /etc/login.defs
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^UMASK'
+    line: 'UMASK 027'
+    state: present
+  notify: Restart sshd service
+
+- name: set the USERGROUPS_ENAB option in /etc/login.defs
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^USERGROUPS_ENAB'
+    line: 'USERGROUPS_ENAB no'
+    state: present
+
+- name: set the pam_umask.so in /etc/pam.d/common-session
+  lineinfile:
+    path: /etc/pam.d/common-session
+    regexp: '^session\soptional\s*pam_umask.so'
+    line: 'session optional pam_umask.so'
+    state: present
+    backup: yes
+  notify: Restart sshd service
+
+- name: Remove conflicting TMOUT definitions
+  lineinfile:
+    path: "{{ item }}"
+    regexp: '^\s*TMOUT='
+    state: absent
+    backup: yes
+  with_fileglob:
+    - /etc/bash.bashrc
+    - /etc/profile
+    - /etc/profile.d/*.sh
+
+# 2. Configure TMOUT in one central location
+- name: Create a dedicated TMOUT configuration file
+  copy:
+    dest: /etc/profile.d/tmout.sh
+    content: |
+      # Set TMOUT to enforce session timeout
+      TMOUT=900
+      readonly TMOUT
+      export TMOUT
+    owner: root
+    group: root
+    mode: '0644'
+
+# 3. Validate TMOUT does not exceed 900 or is set to 0
+- name: Validate TMOUT setting
+  lineinfile:
+    path: /etc/profile.d/tmout.sh
+    regexp: '^\s*TMOUT='
+    line: 'TMOUT=900'
+    state: present
+
+- name: Install libpwquality-tools utilities
+  apt:
+    name:
+      - libpwquality-tools
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Copy the pwquality.conf file to the remote hosts
+  ansible.builtin.copy:
+    src: files/pwquality.conf
+    dest: /etc/security/pwquality.conf
+  become: yes
+
+- name: set the PASS_MIN_DAYS option in /etc/login.defs
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^PASS_MIN_DAYS'
+    line: 'PASS_MIN_DAYS 1'
+    state: present
+
+- name: set the PASS_MAX_DAYS option in /etc/login.defs
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^PASS_MAX_DAYS'
+    line: 'PASS_MAX_DAYS 180'
+    state: present
+
+- name: set the PASS_WARN_AGE option in /etc/login.defs
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^PASS_WARN_AGE'
+    line: 'PASS_WARN_AGE 7'
+    state: present
+
+- name: Ensure inactive password lock is 30 days or less
+  ansible.builtin.command:
+    cmd: useradd -D -f 30
+  become: true
+
+- name: Copy the user default parameters script to the remote hosts
+  ansible.builtin.copy:
+    src: files/user-default-parameters.sh
+    dest: /usr/local/bin/user-default-parameters.sh
+  become: yes
+
+- name: Ensure the user-default-parameters.sh script is executable
+  file:
+    path: /usr/local/bin/user-default-parameters.sh
+    mode: '0755'
+
+- name: Run the user-default-parameters.sh script to ensure all the already-exist users have appropriate parameters
+  shell: /usr/local/bin/user-default-parameters.sh
+  register: user_default_parameters_output
+
+- name: Display the user-default-parameters.sh output
+  debug:
+    var: user_default_parameters_output.stdout
+
 - name: Copy the lock-users.sh script to the remote hosts
   ansible.builtin.copy:
     src: files/lock-users.sh
