@@ -1,22 +1,8 @@
 ---
-- name: Copy the system account script to the remote hosts
-  ansible.builtin.copy:
-    src: files/system-accounts.sh
-    dest: /usr/local/bin/system-accounts.sh
-  become: yes
-
-- name: Ensure the script is executable
-  file:
-    path: /usr/local/bin/system-accounts.sh
-    mode: '0755'
-
-- name: Run the script to ensure system accounts are secured
-  shell: /usr/local/bin/system-accounts.sh
-  register: system_accounts_output
-
-- name: Display the system-accounts.sh output
-  debug:
-    var: system_accounts_output.stdout
+- include_tasks: scripts.yml
+  loop: "{{ security_user_accounts_scripts }}"
+  loop_control:
+    loop_var: script
 
 - name: Ensure default group for the root account is GID 0
   ansible.builtin.command:
@@ -119,40 +105,3 @@
     cmd: useradd -D -f 30
   become: true
 
-- name: Copy the user default parameters script to the remote hosts
-  ansible.builtin.copy:
-    src: files/user-default-parameters.sh
-    dest: /usr/local/bin/user-default-parameters.sh
-  become: yes
-
-- name: Ensure the user-default-parameters.sh script is executable
-  file:
-    path: /usr/local/bin/user-default-parameters.sh
-    mode: '0755'
-
-- name: Run the user-default-parameters.sh script to ensure all the already-exist users have appropriate parameters
-  shell: /usr/local/bin/user-default-parameters.sh
-  register: user_default_parameters_output
-
-- name: Display the user-default-parameters.sh output
-  debug:
-    var: user_default_parameters_output.stdout
-
-- name: Copy the lock-users.sh script to the remote hosts
-  ansible.builtin.copy:
-    src: files/lock-users.sh
-    dest: /usr/local/bin/lock-users.sh
-  become: yes
-
-- name: Ensure the lock-users.sh script is executable
-  file:
-    path: /usr/local/bin/lock-users.sh
-    mode: '0755'
-
-- name: Run the lock-users.sh script to ensure /etc/shadow password fields are not empty
-  shell: /usr/local/bin/lock-users.sh
-  register: lock_users_output
-
-- name: Display the lock-users.sh output
-  debug:
-    var: lock_users_output.stdout

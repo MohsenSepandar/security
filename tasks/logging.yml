@@ -1,22 +1,29 @@
 ---
-- name: Copy the log permission script to the remote hosts
-  ansible.builtin.copy:
-    src: files/log-permission.sh
-    dest: /usr/local/bin/log-permission.sh
+- include_tasks: scripts.yml
+  loop: "{{ security_logging_scripts }}"
+  loop_control:
+    loop_var: script
+
+- name: Install rsyslog
+  apt:
+    name: rsyslog
+    state: present
+    update_cache: yes
   become: yes
 
-- name: Ensure the script is executable
-  file:
-    path: /usr/local/bin/log-permission.sh
-    mode: '0755'
+- name: Ensure rsyslog service is enabled
+  ansible.builtin.systemd:
+    name: rsyslog
+    state: started
+    enabled: yes
 
-- name: Run the log-permission.sh script to ensure all logfiles have appropriate access configured
-  shell: /usr/local/bin/log-permission.sh
-  register: log_permission_output
-
-- name: Display the log-permission.sh output
-  debug:
-    var: log_permission_output.stdout
+- name: Ensure rsyslog default file permissions are configured
+  lineinfile:
+    path: /etc/rsyslog.conf
+    regexp: '^$FileCreateMode'
+    line: '$FileCreateMode 0640'
+    state: present
+  notify: Restart rsyslog service
 
 - name: Ensure journald service is enabled
   ansible.builtin.systemd:
@@ -40,7 +47,7 @@
     state: present
   notify: Restart systemd-journald service
 
-- name: Ensure journald is not configured to send logs to rsyslog
+- name: Ensure journald is configured to send logs to rsyslog
   lineinfile:
     path: /etc/systemd/journald.conf
     regexp: '^ForwardToSyslog'

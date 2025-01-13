@@ -1,2 +1,36 @@
 ---
-# defaults file for security
+security_services:
+
+security_purge_services:
+  - slapd
+  - bind9
+  - vsftpd
+  - apache2
+  - snmpd
+  - dnsmasq
+  - ldap-utils
+  - rpcbind
+
+security_user_accounts_scripts:
+  - lock-users.sh
+  - user-default-parameters.sh
+  - system-accounts.sh
+
+security_system_maintenance_scripts:
+  - secure-file.sh
+
+security_ssh_scripts:
+  - ssh.sh
+  - ssh-key.sh
+  - public-key.sh
+
+security_filesystem_scripts:
+  - cramfs.sh
+  - hfsplus.sh
+  - freexvfs.sh
+  - storage-usb.sh
+  - wireless.sh
+
+security_logging_scripts:
+  - log-permission.sh
+

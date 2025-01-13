@@ -1,55 +1,7 @@
 ---
-- name: Purge slapd
+- name: Purge "{{ service }}"
   apt:
-    name: slapd
+    name: "{{ service }}"
     state: absent
     purge: yes
   become: yes
-
-- name: Purge bind9
-  apt:
-    name: bind9
-    state: absent
-    purge: yes
-  become: yes
-
-- name: Purge vsftpd
-  apt:
-    name: vsftpd
-    state: absent
-    purge: yes
-  become: yes
-
-- name: Purge apache2
-  apt:
-    name: apache2
-    state: absent
-    purge: yes
-  become: yes
-
-- name: Purge snmpd
-  apt:
-    name: snmpd
-    state: absent
-    purge: yes
-  become: yes
-
-- name: Purge dnsmasq
-  apt:
-    name: dnsmasq
-    state: absent
-    purge: yes
-  become: yes
-
-- name: Purge ldap-utils package
-  apt:
-    name: ldap-utils
-    state: absent
-    purge: yes
-
-- name: Purge rpcbind  package
-  apt:
-    name: rpcbind
-    state: absent
-    purge: yes
-

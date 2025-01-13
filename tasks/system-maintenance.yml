@@ -1,4 +1,9 @@
 ---
+- include_tasks: scripts.yml
+  loop: "{{ security_system_maintenance_scripts }}"
+  loop_control:
+    loop_var: script
+
 - name: Ensure /etc/passwd has correct ownership
   file:
     path: /etc/passwd
@@ -88,25 +93,6 @@
     group: root
     state: file
     mode: '0644'
-
-- name: Copy the Secure Files script to the remote host
-  ansible.builtin.copy:
-    src: files/secure-file.sh
-    dest: /usr/local/bin/secure-file.sh
-  become: yes
-
-- name: Ensure the script is executable
-  file:
-    path: /usr/local/bin/secure-file.sh
-    mode: '0755'
-
-- name: Run the script to Secure Files| Be Patient
-  shell: /usr/local/bin/secure-file.sh
-  register: script_output
-
-- name: Display the script output
-  debug:
-    var: script_output.stdout
 
 - name: Set ownership of /boot/grub/grub.cfg to root:root
   file:

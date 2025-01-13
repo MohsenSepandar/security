@@ -6,6 +6,9 @@
 - include_tasks: process-hardening.yml
 
 - include_tasks: services.yml
+  loop: "{{ security_purge_services }}"
+  loop_control:
+    loop_var: service
 
 - include_tasks: chrony.yml
 

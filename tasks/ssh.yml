@@ -1,60 +1,8 @@
 ---
-- name: Copy the ssh.sh script to the remote hosts
-  ansible.builtin.copy:
-    src: files/ssh.sh
-    dest: /usr/local/bin/ssh.sh
-  become: yes
-
-- name: Ensure the script is executable
-  file:
-    path: /usr/local/bin/ssh.sh
-    mode: '0755'
-
-- name: Run the ssh.sh script
-  shell: /usr/local/bin/ssh.sh
-  register: ssh_output
-
-- name: Display the ssh.sh output
-  debug:
-    var: ssh_output.stdout
-
-- name: Copy the ssh-key.sh script to the remote hosts
-  ansible.builtin.copy:
-    src: files/ssh-key.sh
-    dest: /usr/local/bin/ssh-key.sh
-  become: yes
-
-- name: Ensure the script is executable
-  file:
-    path: /usr/local/bin/ssh-key.sh
-    mode: '0755'
-
-- name: Run the ssh-key.sh script
-  shell: /usr/local/bin/ssh-key.sh
-  register: ssh_key_output
-
-- name: Display the ssh-key.sh output
-  debug:
-    var: ssh_key_output.stdout
-
-- name: Copy the public-key.sh script to the remote hosts
-  ansible.builtin.copy:
-    src: files/public-key.sh
-    dest: /usr/local/bin/public-key.sh
-  become: yes
-
-- name: Ensure the script is executable
-  file:
-    path: /usr/local/bin/public-key.sh
-    mode: '0755'
-
-- name: Run the ssh-key.sh script
-  shell: /usr/local/bin/public-key.sh
-  register: public_key_output
-
-- name: Display the public-key.sh output
-  debug:
-    var: public_key_output.stdout
+- include_tasks: scripts.yml
+  loop: "{{ security_ssh_scripts }}"
+  loop_control:
+    loop_var: script
 
 - name: Ensure SSH PermitEmptyPasswords is disabled
   lineinfile:
@@ -104,3 +52,34 @@
     state: present
   notify: Restart sshd service
 
+- name: Ensure only strong Ciphers are used
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^Ciphers'
+    line: 'Ciphers aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr'
+    state: present
+  notify: Restart sshd service
+
+- name: Ensure only strong MAC algorithms are used
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^MACs'
+    line: 'MACs hmac-sha2-256,hmac-sha2-512,umac-128-etm@openssh.com'
+    state: present
+  notify: Restart sshd service
+
+- name: Ensure only strong Key Exchange algorithms are used
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^KexAlgorithms'
+    line: 'KexAlgorithms curve25519-sha256,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512'
+    state: present
+  notify: Restart sshd service
+
+- name: Ensure only strong Host Key algorithms are used
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^HostKeyAlgorithms'
+    line: 'HostKeyAlgorithms rsa-sha2-512,rsa-sha2-256'
+    state: present
+  notify: Restart sshd service

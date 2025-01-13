@@ -1,0 +1,4 @@
+---
+- name: no image to pull for this role
+  debug:
+    msg: "no image to pull for this role"
