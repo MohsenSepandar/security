@@ -52,7 +52,7 @@
     path: /etc/systemd/journald.conf
     regexp: '^ForwardToSyslog'
     line: 'ForwardToSyslog=yes'
-    state: absent
+    state: present
   notify: Restart systemd-journald service
 
 - name: Ensure accounts in /etc/passwd use shadowed passwords
