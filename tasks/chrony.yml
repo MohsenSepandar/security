@@ -20,6 +20,7 @@
     src: chrony.conf.j2
     dest: /etc/chrony/chrony.conf
   become: true
+  notify: Restart chrony service
 
 - name: Ensure chrony service is enabled and started
   systemd:
