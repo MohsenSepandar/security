@@ -4,82 +4,11 @@
   loop_control:
     loop_var: script
 
-- name: Ensure SSH PermitEmptyPasswords is disabled
+- name: apply SSH configurations
   lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^PermitEmptyPasswords'
-    line: 'PermitEmptyPasswords no'
-    state: present
-  notify: Restart sshd service
-
-- name: Ensure SSH IgnoreRhosts is enabled
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^IgnoreRhosts'
-    line: 'IgnoreRhosts yes'
-    state: present
-  notify: Restart sshd service
-
-- name: Ensure SSH MaxAuthTries is set to 4
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^MaxAuthTries'
-    line: 'MaxAuthTries 4'
-    state: present
-  notify: Restart sshd service
-
-- name: Ensure SSH MaxStartups is configured
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^MaxStartups'
-    line: 'MaxStartups 10:30:60'
-    state: present
-  notify: Restart sshd service
-
-- name: Ensure SSH LoginGraceTime is set to 45 seconds
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^LoginGraceTime'
-    line: 'LoginGraceTime 45'
-    state: present
-  notify: Restart sshd service
-
-- name: Ensure SSH MaxSessions is set to 10
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^MaxSessions'
-    line: 'MaxSessions 10'
-    state: present
-  notify: Restart sshd service
-
-- name: Ensure only strong Ciphers are used
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^Ciphers'
-    line: 'Ciphers aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr'
-    state: present
-  notify: Restart sshd service
-
-- name: Ensure only strong MAC algorithms are used
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^MACs'
-    line: 'MACs hmac-sha2-256,hmac-sha2-512,umac-128-etm@openssh.com'
-    state: present
-  notify: Restart sshd service
-
-- name: Ensure only strong Key Exchange algorithms are used
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^KexAlgorithms'
-    line: 'KexAlgorithms curve25519-sha256,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512'
-    state: present
-  notify: Restart sshd service
-
-- name: Ensure only strong Host Key algorithms are used
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^HostKeyAlgorithms'
-    line: 'HostKeyAlgorithms rsa-sha2-512,rsa-sha2-256'
-    state: present
+    path: "{{ security_ssh_config_path }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: "{{ item.state }}"
+  with_items: "{{ ssh_settings }}"
   notify: Restart sshd service

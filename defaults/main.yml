@@ -1,6 +1,58 @@
 ---
 security_services:
 
+ssh_settings:
+  - name: PermitEmptyPasswords
+    regexp: '^PermitEmptyPasswords'
+    line: 'PermitEmptyPasswords {{ ssh_permit_empty_passwords | default("no") }}'
+    state: "{{ ssh_permit_empty_passwords_state | default('present') }}"
+
+  - name: IgnoreRhosts
+    regexp: '^IgnoreRhosts'
+    line: 'IgnoreRhosts {{ ssh_ignore_rhosts | default("yes") }}'
+    state: "{{ ssh_ignore_rhosts_state | default('present') }}"
+
+  - name: MaxAuthTries
+    regexp: '^MaxAuthTries'
+    line: 'MaxAuthTries {{ ssh_max_auth_tries | default(4) }}'
+    state: "{{ ssh_max_auth_tries_state | default('present') }}"
+
+  - name: MaxStartups
+    regexp: '^MaxStartups'
+    line: 'MaxStartups {{ ssh_max_startups | default("10:30:60") }}'
+    state: "{{ ssh_max_startups_state | default('present') }}"
+
+  - name: LoginGraceTime
+    regexp: '^LoginGraceTime'
+    line: 'LoginGraceTime {{ ssh_login_grace_time | default(45) }}'
+    state: "{{ ssh_login_grace_time_state | default('present') }}"
+
+  - name: MaxSessions
+    regexp: '^MaxSessions'
+    line: 'MaxSessions {{ ssh_max_sessions | default(10) }}'
+    state: "{{ ssh_max_sessions_state | default('present') }}"
+
+  - name: Ciphers
+    regexp: '^Ciphers'
+    line: 'Ciphers {{ ssh_ciphers | default("aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr") }}'
+    state: "{{ ssh_ciphers_state | default('present') }}"
+
+  - name: MACs
+    regexp: '^MACs'
+    line: 'MACs {{ ssh_macs | default("hmac-sha2-256,hmac-sha2-512,umac-128-etm@openssh.com") }}'
+    state: "{{ ssh_macs_state | default('present') }}"
+
+  - name: KexAlgorithms
+    regexp: '^KexAlgorithms'
+    line: 'KexAlgorithms {{ ssh_kex_algorithms | default("curve25519-sha256,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512") }}'
+    state: "{{ ssh_kex_algorithms_state | default('present') }}"
+
+  - name: HostKeyAlgorithms
+    regexp: '^HostKeyAlgorithms'
+    line: 'HostKeyAlgorithms {{ ssh_host_key_algorithms | default("rsa-sha2-512,rsa-sha2-256") }}'
+    state: "{{ ssh_host_key_algorithms_state | default('present') }}"
+
+
 security_purge_services:
   - slapd
   - bind9
