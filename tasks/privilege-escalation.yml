@@ -1,0 +1,15 @@
+---
+- name: Ensure sudo is installed
+  apt:
+    name: sudo
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: apply sudoers settings
+  lineinfile:
+    path: /etc/sudoers
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: "{{ item.state }}"
+  with_items: "{{ privilege_settings }}"

@@ -22,3 +22,7 @@
     loop_var: partition
 
 - include_tasks: ssh.yml
+
+- include_tasks: privilege-escalation.yml
+
+- include_tasks: pam.yml

@@ -8,7 +8,7 @@
 
 - name: get the management IP range
   become: true
-  shell: "ip route | grep {{ network_interface }} | awk {'print $1'} | grep -v default"
+  shell: "ip route | grep {{ network_interface }} | grep -v default | grep kernel | awk {'print $1'}"
   register: ip_range
 
 - name: Set the management IP range

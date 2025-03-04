@@ -52,6 +52,36 @@ ssh_settings:
     line: 'HostKeyAlgorithms {{ ssh_host_key_algorithms | default("rsa-sha2-512,rsa-sha2-256") }}'
     state: "{{ ssh_host_key_algorithms_state | default('present') }}"
 
+privilege_settings:
+  - name: use pty
+    regexp: "^Defaults\\s+use_pty"
+    line: "Defaults        use_pty"
+    state: present
+
+  - name: sudo log file
+    regexp: "^Defaults\\s+logfile"
+    line: "Defaults        logfile=/var/log/sudo.log"
+    state: present
+
+  - name: use env reset
+    regexp: "^Defaults\\s+env_reset"
+    line: "Defaults        env_reset"
+    state: present
+
+  - name: sudo authentication timeout
+    regexp: "^Defaults\\s+timestamp_timeout"
+    line: "Defaults        timestamp_timeout=15"
+    state: present
+
+  - name: ensure re-authentication is not disabled
+    regexp: "^[^#]*!authenticate"
+    line: ""
+    state: absent
+
+  - name: ensure re-authentication is not disabled globally
+    regexp: "^[^#]*NOPASSWD"
+    line: ""
+    state: absent
 
 security_purge_services:
   - slapd
@@ -86,3 +116,138 @@ security_filesystem_scripts:
 security_logging_scripts:
   - log-permission.sh
 
+
+security_password_quality:
+  - parameter: maxrepeat
+    value: 3
+
+  - parameter: difok
+    value: 2
+
+  - parameter: dictcheck
+    value: 1
+
+  - parameter: minlen
+    value: 14
+
+  - parameter: minclass
+    value: 4
+
+security_faillock_settings:
+  - name: deny
+    regexp: "^deny"
+    line: "deny = {{ security_faillock_deny | default('5') }}"
+    state: present
+
+  - name: unlock time
+    regexp: "^unlock_time"
+    line: "unlock_time = {{ security_faillock_unlock_time | default('30') }}"
+    state: present
+
+  - name: fail interval
+    regexp: "^fail_interval"
+    line: "fail_interval = {{ security_faillock_fail_interval | default('30') }}"
+    state: present
+
+  - name: audit
+    regexp: "^audit"
+    line: "audit"
+    state: present
+
+  - name: deny root
+    regexp: "^even_deny_root"
+    line: "even_deny_root"
+    state: present
+
+  - name: root unlock time
+    regexp: "^root_unlock_time"
+    line: "root_unlock_time = {{ security_faillock_root_unlock_time | default('900') }}"
+    state: present
+
+
+# Be careful: Order matters here. So please don't change the order
+security_pam_settings:
+  - name: preauth
+    path: "{{ security_common_auth_path | default('/etc/pam.d/common-auth')}}"
+    regexp: "^auth\\s+requried\\s+pam_faillock.so\\s+preauth"
+    line: "auth required pam_faillock.so preauth"
+    insertbefore: "^[^#]*pam_unix"
+    state: present
+
+  - name: authfail
+    path: "{{ security_common_auth_path | default('/etc/pam.d/common-auth')}}"
+    regexp: "^auth\\s+\\[default=die\\]\\s+pam_faillock.so\\s+authfail"
+    line: "auth [default=die] pam_faillock.so authfail"
+    insertafter: "^[^#]*pam_unix"
+    state: present
+
+  - name: authsucc
+    path: "{{ security_common_auth_path | default('/etc/pam.d/common-auth')}}"
+    regexp: "^auth\\s+sufficient\\s+pam_faillock.so\\s+authsucc"
+    line: "auth sufficient pam_faillock.so authsucc"
+    insertafter: "^[^#]*authfail"
+    state: present
+
+  - name: pam faillock
+    path: "{{ security_common_account_path | default('/etc/pam.d/common-account')}}"
+    regexp: "^account\\s+requisite\\s+pam_faillock.so"
+    line: "account required pam_faillock.so"
+    insertbefore: "^[^#]*pam_unix.so"
+    state: present
+
+  - name: pw history
+    path: "{{ security_common_password_path | default('/etc/pam.d/common-password')}}"
+    regexp: "^[^#]*pam_pwhistory.so"
+    line: "password requisite pam_pwhistory.so remember=5 enforce_for_root"
+    insertbefore: "^[^#]*pam_pwquality.so"
+    state: present
+
+  - name: password reuse and complexity
+    path: "{{ security_common_password_path | default('/etc/pam.d/common-password')}}"
+    regexp: "^[^#]*pam_unix.so"
+    line: "password [success=1 default=ignore] pam_unix.so obscure sha512 use_authtok"
+    state: present
+
+
+security_login_def_settings:
+  - name: user group 
+    path: "{{ security_login_def_path | default('/etc/login.defs') }}"
+    regexp: "^USERGROUPS_ENAB"
+    line: "USERGROUPS_ENAB no"
+    state: present
+
+  - name: UMASK 
+    path: "{{ security_login_def_path | default('/etc/login.defs') }}"
+    regexp: "^UMASK"
+    line: "UMASK {{ security_umask_value | default('027')}}"
+    state: present
+
+  - name: user group 
+    path: "{{ security_login_def_path | default('/etc/login.defs') }}"
+    regexp: "^USERGROUPS_ENAB"
+    line: "USERGROUPS_ENAB no"
+    state: present
+
+  - name: set the PASS_MIN_DAYS
+    path: "{{ security_login_def_path | default('/etc/login.defs') }}"
+    regexp: "^PASS_MIN_DAYS"
+    line: "PASS_MIN_DAYS {{ security_pass_min_days | default('1')}}"
+    state: present
+
+  - name: set the PASS_MAX_DAYS
+    path: "{{ security_login_def_path | default('/etc/login.defs') }}"
+    regexp: "^PASS_MAX_DAYS"
+    line: "PASS_MAX_DAYS {{ security_pass_max_days | default('180')}}"
+    state: present
+
+  - name: set the PASS_WARN_AGE 
+    path: "{{ security_login_def_path | default('/etc/login.defs') }}"
+    regexp: "^PASS_WARN_AGE"
+    line: "PASS_WARN_AGE {{ security_pass_warn_age | default('7') }}"
+    state: present
+
+  - name: set the encrypt method
+    path: "{{ security_login_def_path | default('/etc/login.defs') }}"
+    regexp: "^ENCRYPT_METHOD"
+    line: "ENCRYPT_METHOD {{ security_pass_encrypt_method | default('SHA512') }}"
+    state: present

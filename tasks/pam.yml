@@ -1,0 +1,33 @@
+---
+- name: install libpam_pwquality
+  apt:
+    name:
+      - libpam-pwquality
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: apply password paramters
+  template:
+    src: templates/pwquality.conf.j2
+    dest: /etc/security/pwquality.conf
+  become: true
+
+- name: apply faillock settings
+  lineinfile:
+    path: "{{ security_faillock_config_path }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: "{{ item.state }}"
+  with_items: "{{ security_faillock_settings }}"
+
+- name: apply common auth settings
+  lineinfile:
+    path: "{{ item.path }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: "{{ item.state }}"
+    insertbefore: "{{ item.insertbefore | default(omit) }}"  
+    insertafter: "{{ item.insertafter | default(omit) }}"    
+  with_items: "{{ security_pam_settings }}"
+
