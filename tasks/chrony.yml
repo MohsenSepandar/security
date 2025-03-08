@@ -3,7 +3,6 @@
   apt:
     name: chrony
     state: present
-    update_cache: yes
   become: yes
 
 - name: get the management IP range

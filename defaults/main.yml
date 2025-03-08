@@ -251,3 +251,22 @@ security_login_def_settings:
     regexp: "^ENCRYPT_METHOD"
     line: "ENCRYPT_METHOD {{ security_pass_encrypt_method | default('SHA512') }}"
     state: present
+
+
+security_file_permissions:
+  - path: "/etc/issue"
+    mode: "0644"
+    owner: "root"
+    group: "root"
+
+  - path: "/etc/issue.net"
+    mode: "0644"
+    owner: "root"
+    group: "root"
+
+security_script_base_path: "/usr/local/bin"
+security_ssh_config_path: "/etc/ssh/sshd_config"
+security_faillock_config_path: "/etc/security/faillock.conf"
+security_common_auth_path: "/etc/pam.d/common-auth"
+security_common_account_path: "/etc/pam.d/common-account"
+

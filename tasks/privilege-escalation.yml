@@ -3,7 +3,6 @@
   apt:
     name: sudo
     state: present
-    update_cache: yes
   become: yes
 
 - name: apply sudoers settings

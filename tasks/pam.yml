@@ -4,7 +4,6 @@
     name:
       - libpam-pwquality
     state: present
-    update_cache: yes
   become: yes
 
 - name: apply password paramters

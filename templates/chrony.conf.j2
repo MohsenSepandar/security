@@ -57,7 +57,7 @@ makestep 1 3
 # leap-smeared time.
 leapsectz right/UTC
 # BEGIN ANSIBLE MANAGED BLOCK
-{% if inventory_hostname in groups['control'] %}
+{% if inventory_hostname in groups['control'] or inventory_hostname in groups['deployment'] %}
 allow {{ management_ip_range }}
 {% for ip in chrony_timeserver_ips %}
 pool {{ ip }} iburst

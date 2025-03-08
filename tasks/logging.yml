@@ -8,7 +8,6 @@
   apt:
     name: rsyslog
     state: present
-    update_cache: yes
   become: yes
 
 - name: Ensure rsyslog service is enabled
