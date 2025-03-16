@@ -141,12 +141,12 @@ security_faillock_settings:
 
   - name: unlock time
     regexp: "^unlock_time"
-    line: "unlock_time = {{ security_faillock_unlock_time | default('30') }}"
+    line: "unlock_time = {{ security_faillock_unlock_time | default('900') }}"
     state: present
 
   - name: fail interval
     regexp: "^fail_interval"
-    line: "fail_interval = {{ security_faillock_fail_interval | default('30') }}"
+    line: "fail_interval = {{ security_faillock_fail_interval | default('900') }}"
     state: present
 
   - name: audit
