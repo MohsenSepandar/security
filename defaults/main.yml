@@ -2,82 +2,104 @@
 security_services:
 
 ssh_settings:
+
+#Prevents SSH logins using empty passwords (PermitEmptyPasswords no).
   - name: PermitEmptyPasswords
     regexp: '^PermitEmptyPasswords'
     line: 'PermitEmptyPasswords {{ ssh_permit_empty_passwords | default("no") }}'
     state: "{{ ssh_permit_empty_passwords_state | default('present') }}"
 
+#Prevents users from bypassing SSH authentication with old rhosts-based trust relationships.
   - name: IgnoreRhosts
     regexp: '^IgnoreRhosts'
     line: 'IgnoreRhosts {{ ssh_ignore_rhosts | default("yes") }}'
     state: "{{ ssh_ignore_rhosts_state | default('present') }}"
 
+#Limits the number of failed login attempts (default: 4). After the limit, SSH terminates the connection.
   - name: MaxAuthTries
     regexp: '^MaxAuthTries'
     line: 'MaxAuthTries {{ ssh_max_auth_tries | default(4) }}'
     state: "{{ ssh_max_auth_tries_state | default('present') }}"
 
+#Controls how many unauthenticated SSH connections can exist simultaneously.
+#10 → Start dropping connections when 10 unauthenticated connections exist.
+#30 → Drop 30% of new connections beyond the limit.
+#60 → Drop 100% of new connections at 60 attempts.
   - name: MaxStartups
     regexp: '^MaxStartups'
     line: 'MaxStartups {{ ssh_max_startups | default("10:30:60") }}'
     state: "{{ ssh_max_startups_state | default('present') }}"
 
+# Limits how long a user can take to enter their password (default: 45 seconds).If time expires, SSH terminates the connection.
   - name: LoginGraceTime
     regexp: '^LoginGraceTime'
     line: 'LoginGraceTime {{ ssh_login_grace_time | default(45) }}'
     state: "{{ ssh_login_grace_time_state | default('present') }}"
 
+#Restricts the number of simultaneous SSH sessions per user (default: 10).
   - name: MaxSessions
     regexp: '^MaxSessions'
     line: 'MaxSessions {{ ssh_max_sessions | default(10) }}'
     state: "{{ ssh_max_sessions_state | default('present') }}"
 
+#Specifies strong encryption ciphers for SSH communication.
   - name: Ciphers
     regexp: '^Ciphers'
     line: 'Ciphers {{ ssh_ciphers | default("aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr") }}'
     state: "{{ ssh_ciphers_state | default('present') }}"
 
+#Defines secure Message Authentication Codes (MACs) to prevent man-in-the-middle attacks.
   - name: MACs
     regexp: '^MACs'
     line: 'MACs {{ ssh_macs | default("hmac-sha2-256,hmac-sha2-512,umac-128-etm@openssh.com") }}'
     state: "{{ ssh_macs_state | default('present') }}"
 
+#Defines secure key exchange (KEX) algorithms to protect against MITM (Man-in-the-Middle)
   - name: KexAlgorithms
     regexp: '^KexAlgorithms'
     line: 'KexAlgorithms {{ ssh_kex_algorithms | default("curve25519-sha256,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512") }}'
     state: "{{ ssh_kex_algorithms_state | default('present') }}"
 
+#Specifies which host key algorithms SSH should use.
   - name: HostKeyAlgorithms
     regexp: '^HostKeyAlgorithms'
     line: 'HostKeyAlgorithms {{ ssh_host_key_algorithms | default("rsa-sha2-512,rsa-sha2-256") }}'
     state: "{{ ssh_host_key_algorithms_state | default('present') }}"
 
 privilege_settings:
+
+#Forces sudo commands to run inside a pseudo-terminal (PTY).
   - name: use pty
     regexp: "^Defaults\\s+use_pty"
     line: "Defaults        use_pty"
     state: present
 
+#Stores all sudo command activity in /var/log/sudo.log.
   - name: sudo log file
     regexp: "^Defaults\\s+logfile"
     line: "Defaults        logfile=/var/log/sudo.log"
     state: present
 
+#Resets environment variables when using sudo to prevent malicious variables from being passed.
   - name: use env reset
     regexp: "^Defaults\\s+env_reset"
     line: "Defaults        env_reset"
     state: present
 
+#Sets sudo session timeout to 15 minutes.
+#After 15 minutes of inactivity, users must re-enter their password.
   - name: sudo authentication timeout
     regexp: "^Defaults\\s+timestamp_timeout"
     line: "Defaults        timestamp_timeout=15"
     state: present
 
+#Forces users to always enter a password for sudo.
   - name: ensure re-authentication is not disabled
     regexp: "^[^#]*!authenticate"
     line: ""
     state: absent
 
+#Ensures every sudo command requires a password.
   - name: ensure re-authentication is not disabled globally
     regexp: "^[^#]*NOPASSWD"
     line: ""
@@ -118,47 +140,60 @@ security_logging_scripts:
 
 
 security_password_quality:
+#Prevents using more than 3 consecutive identical characters.
   - parameter: maxrepeat
     value: 3
 
+#Requires at least 2 characters to be different from the old password.
   - parameter: difok
     value: 2
 
+#Rejects passwords found in a dictionary.Blocks weak passwords like "password", "admin123", or "qwerty".
   - parameter: dictcheck
     value: 1
 
+#Forces passwords to be at least 14 characters long.
   - parameter: minlen
     value: 14
 
+#Requires passwords to include all 4 character types: Uppercase (A-Z), Lowercase (a-z), Digits (0-9), Special characters (@, #, $ etc.)
   - parameter: minclass
     value: 4
 
+#Ensure lockout for failed password attempts is configured
 security_faillock_settings:
+
+#Locks an account after 5 failed login attempts (default: 5).
   - name: deny
     regexp: "^deny"
     line: "deny = {{ security_faillock_deny | default('5') }}"
     state: present
 
+#Unlocks the account automatically after 900 seconds (15 minutes).
   - name: unlock time
     regexp: "^unlock_time"
     line: "unlock_time = {{ security_faillock_unlock_time | default('900') }}"
     state: present
 
+#Failed login attempts are counted within a 900-second (15-minute) window.
   - name: fail interval
     regexp: "^fail_interval"
     line: "fail_interval = {{ security_faillock_fail_interval | default('900') }}"
     state: present
 
+#Logs all failed login attempts for auditing and security monitoring.
   - name: audit
     regexp: "^audit"
     line: "audit"
     state: present
 
+#Locks the root account after too many failed login attempts.
   - name: deny root
     regexp: "^even_deny_root"
     line: "even_deny_root"
     state: present
 
+#Unlocks the root account automatically after 900 seconds (15 minutes).
   - name: root unlock time
     regexp: "^root_unlock_time"
     line: "root_unlock_time = {{ security_faillock_root_unlock_time | default('900') }}"
@@ -167,6 +202,8 @@ security_faillock_settings:
 
 # Be careful: Order matters here. So please don't change the order
 security_pam_settings:
+
+#Enables tracking of failed login attempts before authentication (preauth).
   - name: preauth
     path: "{{ security_common_auth_path | default('/etc/pam.d/common-auth')}}"
     regexp: "^auth\\s+requried\\s+pam_faillock.so\\s+preauth"
@@ -174,6 +211,7 @@ security_pam_settings:
     insertbefore: "^[^#]*pam_unix"
     state: present
 
+#If authentication fails, PAM immediately denies login (default=die). Inserted after pam_unix.so, so failure counts only after the real password check.
   - name: authfail
     path: "{{ security_common_auth_path | default('/etc/pam.d/common-auth')}}"
     regexp: "^auth\\s+\\[default=die\\]\\s+pam_faillock.so\\s+authfail"
@@ -181,6 +219,7 @@ security_pam_settings:
     insertafter: "^[^#]*pam_unix"
     state: present
 
+#Resets failed login attempts after a successful authentication.
   - name: authsucc
     path: "{{ security_common_auth_path | default('/etc/pam.d/common-auth')}}"
     regexp: "^auth\\s+sufficient\\s+pam_faillock.so\\s+authsucc"
@@ -188,6 +227,7 @@ security_pam_settings:
     insertafter: "^[^#]*authfail"
     state: present
 
+#Locks user accounts if too many failed login attempts occur.
   - name: pam faillock
     path: "{{ security_common_account_path | default('/etc/pam.d/common-account')}}"
     regexp: "^account\\s+requisite\\s+pam_faillock.so"
@@ -195,6 +235,7 @@ security_pam_settings:
     insertbefore: "^[^#]*pam_unix.so"
     state: present
 
+#Prevents users from reusing the last 5 passwords (remember=5)
   - name: pw history
     path: "{{ security_common_password_path | default('/etc/pam.d/common-password')}}"
     regexp: "^[^#]*pam_pwhistory.so"
@@ -202,6 +243,10 @@ security_pam_settings:
     insertbefore: "^[^#]*pam_pwquality.so"
     state: present
 
+
+#Uses SHA512 hashing (sha512) for secure password storage.
+#Enforces obscure password rules (obscure) to prevent easily guessable passwords.
+#Ensures password is carried forward securely (use_authtok).
   - name: password reuse and complexity
     path: "{{ security_common_password_path | default('/etc/pam.d/common-password')}}"
     regexp: "^[^#]*pam_unix.so"
@@ -210,12 +255,14 @@ security_pam_settings:
 
 
 security_login_def_settings:
+# if set to yes, "USERGROUPS_ENAB" will enable setting of the umask group bits to be the same as owner bits. (examples: 022 -> 002, 077 -> 007) for non-root users, if the uid is the same as gid, and username is the same as the primary group name
   - name: user group 
     path: "{{ security_login_def_path | default('/etc/login.defs') }}"
     regexp: "^USERGROUPS_ENAB"
     line: "USERGROUPS_ENAB no"
     state: present
 
+#Ensure default user umask is 027 or more restrictive
   - name: UMASK 
     path: "{{ security_login_def_path | default('/etc/login.defs') }}"
     regexp: "^UMASK"
@@ -228,24 +275,28 @@ security_login_def_settings:
     line: "USERGROUPS_ENAB no"
     state: present
 
+#Ensure minimum days between password changes is  configured
   - name: set the PASS_MIN_DAYS
     path: "{{ security_login_def_path | default('/etc/login.defs') }}"
     regexp: "^PASS_MIN_DAYS"
     line: "PASS_MIN_DAYS {{ security_pass_min_days | default('1')}}"
     state: present
 
+#Ensure password expiration is 180 days 
   - name: set the PASS_MAX_DAYS
     path: "{{ security_login_def_path | default('/etc/login.defs') }}"
     regexp: "^PASS_MAX_DAYS"
     line: "PASS_MAX_DAYS {{ security_pass_max_days | default('180')}}"
     state: present
 
+#Ensure password expiration warning days is 7 or more
   - name: set the PASS_WARN_AGE 
     path: "{{ security_login_def_path | default('/etc/login.defs') }}"
     regexp: "^PASS_WARN_AGE"
     line: "PASS_WARN_AGE {{ security_pass_warn_age | default('7') }}"
     state: present
 
+#Ensure strong password hashing algorithm is configured
   - name: set the encrypt method
     path: "{{ security_login_def_path | default('/etc/login.defs') }}"
     regexp: "^ENCRYPT_METHOD"
