@@ -137,4 +137,3 @@
     state: present            # Ensure the line is present and updated
   notify: Reload systemd daemon
   become: yes
-

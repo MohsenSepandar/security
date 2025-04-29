@@ -1,0 +1,15 @@
+---
+- name: Stop and mask Bluetooth service if it exists
+  systemd:
+    name: bluetooth
+    state: stopped
+    masked: yes
+  failed_when: false
+
+- name: adding kernel parameters
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: "{{ item.state }}"
+    reload: yes
+  with_items: "{{ security_kernel_parameters }}"

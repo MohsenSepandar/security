@@ -1,28 +1,30 @@
 ---
-- include_tasks: filesystem.yml
-
-- include_tasks: system-maintenance.yml
-
-- include_tasks: process-hardening.yml
-
-- include_tasks: services.yml
-  loop: "{{ security_purge_services }}"
-  loop_control:
-    loop_var: service
-
-- include_tasks: chrony.yml
-
-- include_tasks: user-accounts.yml
-
-- include_tasks: logging.yml
-
-- include_tasks: partitions.yml
-  loop: "{{ fstab_partitions }}"
-  loop_control:
-    loop_var: partition
-
-- include_tasks: ssh.yml
+#- include_tasks: filesystem.yml
+#
+#- include_tasks: system-maintenance.yml
+#
+#- include_tasks: process-hardening.yml
+#
+#- include_tasks: services.yml
+#  loop: "{{ security_purge_services }}"
+#  loop_control:
+#    loop_var: service
+#
+#- include_tasks: chrony.yml
+#
+#- include_tasks: user-accounts.yml
+#
+#- include_tasks: logging.yml
+#
+#- include_tasks: partitions.yml
+#  loop: "{{ fstab_partitions }}"
+#  loop_control:
+#    loop_var: partition
+#
+#- include_tasks: ssh.yml
 
 - include_tasks: privilege-escalation.yml
 
 - include_tasks: pam.yml
+
+  #- include_tasks: bluetooth.yml

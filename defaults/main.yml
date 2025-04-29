@@ -154,7 +154,7 @@ security_password_quality:
 
 #Forces passwords to be at least 14 characters long.
   - parameter: minlen
-    value: 14
+    value: 8
 
 #Requires passwords to include all 4 character types: Uppercase (A-Z), Lowercase (a-z), Digits (0-9), Special characters (@, #, $ etc.)
   - parameter: minclass
@@ -314,6 +314,57 @@ security_file_permissions:
     mode: "0644"
     owner: "root"
     group: "root"
+
+
+security_kernel_parameters:
+  - name: net.ipv4.conf.all.send_redirects
+    value: 0
+    state: present
+
+  - name: net.ipv4.conf.default.send_redirects
+    value: 0
+    state: present
+
+  - name: net.ipv4.conf.all.accept_redirects
+    value: 0
+    state: present
+
+  - name: net.ipv4.conf.default.accept_redirects
+    value: 0
+    state: present
+
+  - name: net.ipv4.conf.all.secure_redirects
+    value: 0
+    state: present
+
+  - name: net.ipv4.conf.default.secure_redirects
+    value: 0
+    state: present
+
+#used to log martian packets to /var/log/messages
+  - name: net.ipv4.conf.all.log_martians
+    value: 1
+    state: present
+
+  - name: net.ipv4.conf.default.log_martians
+    value: 1
+    state: present
+
+  - name: net.ipv4.icmp_echo_ignore_broadcasts
+    value: 1
+    state: present
+
+  - name: net.ipv4.tcp_syncookies
+    value: 1
+    state: present
+
+  - name: net.ipv6.conf.all.accept_ra
+    value: 0
+    state: present
+
+  - name: net.ipv6.conf.default.accept_ra
+    value: 0
+    state: present
 
 security_script_base_path: "/usr/local/bin"
 security_ssh_config_path: "/etc/ssh/sshd_config"
